@@ -1,6 +1,3 @@
-import sys
-sys.path.append(r'D:\msliu\projects')
-
 from alphalens_plus.utils import compute_forward_returns
 from pandas import (
     Series,
