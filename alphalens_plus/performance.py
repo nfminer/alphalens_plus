@@ -1,79 +1,79 @@
 import pandas as pd
 from scipy import stats
-import empyrical as ep
+# import empyrical as ep
 from . import utils
 
 
-def cumulative_returns(returns):
-    """
-    计算简单日度收益率序列的累积收益率（起点默认1）
+# def cumulative_returns(returns):
+#     """
+#     计算简单日度收益率序列的累积收益率（起点默认1）
 
-    - 相对于alphalens原函数无改变，但输入时一般returns.shift(1)，因为收益率都是远期收益率，因子都是当日收盘后计算得出当日收盘后的持仓组合。
-      同时，这里暂时不内置移动，所有收益率的移动均在函数外输入时调整。
+#     - 相对于alphalens原函数无改变，但输入时一般returns.shift(1)，因为收益率都是远期收益率，因子都是当日收盘后计算得出当日收盘后的持仓组合。
+#       同时，这里暂时不内置移动，所有收益率的移动均在函数外输入时调整。
 
-    :param returns: 包含日度因子收益率序列
-    :type returns: pd.Series
-    :return: 累积收益率序列
-    :return type: pd.Series
-    :return example:
-        2015-01-05   1.001310
-        2015-01-06   1.000805
-        2015-01-07   1.001092
-        2015-01-08   0.999200
-    """
+#     :param returns: 包含日度因子收益率序列
+#     :type returns: pd.Series
+#     :return: 累积收益率序列
+#     :return type: pd.Series
+#     :return example:
+#         2015-01-05   1.001310
+#         2015-01-06   1.000805
+#         2015-01-07   1.001092
+#         2015-01-08   0.999200
+#     """
 
-    return ep.cum_returns(returns, starting_value=1)
+#     return ep.cum_returns(returns, starting_value=1)
 
 
-def cumulative_returns_plus(returns, start_date=None, end_date=None, starting_value=1, ret_col='1D', with_excess=True) -> pd.DataFrame:
-    """给定组合收益率序列1D和基准收益率序列1D_benchmark计算超额收益率
+# def cumulative_returns_plus(returns, start_date=None, end_date=None, starting_value=1, ret_col='1D', with_excess=True) -> pd.DataFrame:
+#     """给定组合收益率序列1D和基准收益率序列1D_benchmark计算超额收益率
 
-    - 这里一定要单独拿一个函数来封装就是因为超额收益率不能是先相减再累乘，而是要先计算净值后再相减
-    - 如果1D收益率是基于t+1的open至t+2的open计算的，那么日期需要向后移动一个交易日
+#     - 这里一定要单独拿一个函数来封装就是因为超额收益率不能是先相减再累乘，而是要先计算净值后再相减
+#     - 如果1D收益率是基于t+1的open至t+2的open计算的，那么日期需要向后移动一个交易日
 
-    Parameters
-    ----------
-    returns : 日度收益率序列dataframe，包含至少1D和1D_benchmark两个序列
-    ret_col : 列名，默认1D逐日收益率
-    start_date : 起始日期，默认样本数据的起点。注意，这里的起始日期是因子计算日，并非实际交易日。
-                 一般而言是在因子计算日当日收盘后计算，所以最早的买入也是在下一个交易日的开盘。
-    end_date : 结束日期，默认所有数据
-    starting_value : 起始净值，默认1
-    with_excess : 是否计算超额收益率，默认True。这里超额收益率使用净值计算，即策略累积净值与基准累计净值的差。
+#     Parameters
+#     ----------
+#     returns : 日度收益率序列dataframe，包含至少1D和1D_benchmark两个序列
+#     ret_col : 列名，默认1D逐日收益率
+#     start_date : 起始日期，默认样本数据的起点。注意，这里的起始日期是因子计算日，并非实际交易日。
+#                  一般而言是在因子计算日当日收盘后计算，所以最早的买入也是在下一个交易日的开盘。
+#     end_date : 结束日期，默认所有数据
+#     starting_value : 起始净值，默认1
+#     with_excess : 是否计算超额收益率，默认True。这里超额收益率使用净值计算，即策略累积净值与基准累计净值的差。
 
-    Returns
-    -------
-    cum_returns : 累积净值数据，含3列，分别为组合净值1D，基准净值1D_benchmark和超额收益1D_excess。
+#     Returns
+#     -------
+#     cum_returns : 累积净值数据，含3列，分别为组合净值1D，基准净值1D_benchmark和超额收益1D_excess。
 
-    P.S
-    ---
-    注意，此时返回的收益率已经做了shift处理，返回结果的当日的数据便是当日收盘后的净值。理论上来讲只要是因子投资，且在收盘或收盘后才
-    计算出因子值的，无论是T的close到T+1的close，还是T+1的open到T+1的close，只要涉及净值计算，都要shift(1)，因为此时输入的收益率
-    都是1D forward（1日远期收益率）。
-    """
-    import rqdatac
-    if not start_date:
-        start_date = returns.index.min()
-    # forward_returns必须要向后推移一日，这样当日的净值数据才是真实的净值数据（即实际持仓获得净值的数据），这里输入的start_date准确来讲是因子计算日
-    # 而当start_date不是交易日时，理论上第一次买入是在下一个交易日的开盘，所以这里因子的计算日期是start_date的上一个交易日
-    if not rqdatac.is_trading_date(start_date):
-        start_date = rqdatac.get_previous_trading_date(start_date)
-    if not end_date:
-        end_date = returns.index.max()
-    # end_date的逻辑和start_date相同
-    if not rqdatac.is_trading_date(end_date):
-        end_date = rqdatac.get_previous_trading_date(end_date)
+#     P.S
+#     ---
+#     注意，此时返回的收益率已经做了shift处理，返回结果的当日的数据便是当日收盘后的净值。理论上来讲只要是因子投资，且在收盘或收盘后才
+#     计算出因子值的，无论是T的close到T+1的close，还是T+1的open到T+1的close，只要涉及净值计算，都要shift(1)，因为此时输入的收益率
+#     都是1D forward（1日远期收益率）。
+#     """
+#     import rqdatac
+#     if not start_date:
+#         start_date = returns.index.min()
+#     # forward_returns必须要向后推移一日，这样当日的净值数据才是真实的净值数据（即实际持仓获得净值的数据），这里输入的start_date准确来讲是因子计算日
+#     # 而当start_date不是交易日时，理论上第一次买入是在下一个交易日的开盘，所以这里因子的计算日期是start_date的上一个交易日
+#     if not rqdatac.is_trading_date(start_date):
+#         start_date = rqdatac.get_previous_trading_date(start_date)
+#     if not end_date:
+#         end_date = returns.index.max()
+#     # end_date的逻辑和start_date相同
+#     if not rqdatac.is_trading_date(end_date):
+#         end_date = rqdatac.get_previous_trading_date(end_date)
 
-    # 更新索引：因为收益率是用的T+1的open到T+2的open的ROC，所以实际索引要向后推一日
-    # 此时T日的收益率数据才是T日的open到T+1的open的ROC，对应的净值也就是当日收盘后的净值（假设T+1日的开盘价卖出持有资产）
-    returns_p = returns.loc[start_date:end_date].copy(deep=True).shift(1)
+#     # 更新索引：因为收益率是用的T+1的open到T+2的open的ROC，所以实际索引要向后推一日
+#     # 此时T日的收益率数据才是T日的open到T+1的open的ROC，对应的净值也就是当日收盘后的净值（假设T+1日的开盘价卖出持有资产）
+#     returns_p = returns.loc[start_date:end_date].copy(deep=True).shift(1)
 
-    returns_p.iloc[0] = 0  # 保证起点都是1，即真实持仓的return从下一日开始
+#     returns_p.iloc[0] = 0  # 保证起点都是1，即真实持仓的return从下一日开始
 
-    cum_returns = ep.cum_returns(returns_p, starting_value=starting_value)
-    if with_excess:
-        cum_returns[f'{ret_col}_excess'] = cum_returns[ret_col] - cum_returns[f'{ret_col}_benchmark'] + starting_value
-    return cum_returns
+#     cum_returns = ep.cum_returns(returns_p, starting_value=starting_value)
+#     if with_excess:
+#         cum_returns[f'{ret_col}_excess'] = cum_returns[ret_col] - cum_returns[f'{ret_col}_benchmark'] + starting_value
+#     return cum_returns
 
 
 def factor_weights(factor_data,
