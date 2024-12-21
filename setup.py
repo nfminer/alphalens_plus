@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 import sys
-from alphalens_plus import __version__
+# from alphalens_plus import __version__  # env problem
 
 
 python_version = f"cp{sys.version_info.major}{sys.version_info.minor}"
 
 setup(
     name='alphalens_plus',
-    version=__version__,
+    version="1.0.2",
     description='Alpha analysis tools box',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
