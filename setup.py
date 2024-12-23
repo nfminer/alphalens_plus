@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import sys
+import codecs
 from alphalens_plus import __version__  # env problem
 
 
@@ -9,7 +10,7 @@ setup(
     name='alphalens_plus',
     version=__version__,
     description='Alpha analysis tools box',
-    long_description=open('README.md').read(),
+    long_description=codecs.open('README.md', encoding='utf-8-sig').read(),
     long_description_content_type='text/markdown',
     author='msliu98',
     author_email='mingshuoliu98@163.com',

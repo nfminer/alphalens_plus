@@ -10,4 +10,4 @@
 # del get_versions
 __version__ = '1.0.2'
 
-__all__ = ['performance', 'plotting', 'tears', 'utils', 'logging']
+__all__ = ['__version__', 'performance', 'plotting', 'tears', 'utils', 'logging']
