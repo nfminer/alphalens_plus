@@ -1,5 +1,8 @@
 -i https://mirrors.aliyun.com/pypi/simple/
 loguru
+# cvxpy  # for python>=3.9
+six
+statsmodels
 scipy
 matplotlib
 seaborn

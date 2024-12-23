@@ -1,10 +1,6 @@
-import sys
-
-sys.path.extend([r"F:\Projects\quant-libs\eqdata", r"F:\Projects\quant-libs\alphalens_plus", ])
 
 import traceback
 import pandas as pd
-import eqdata
 from alphalens_plus import utils
 from alphalens_plus import performance as perf
 import unittest
@@ -15,7 +11,8 @@ class JTDataTester(unittest.TestCase):
     def setUp(self):
         self.start_date = '2024-01-01'
         self.end_date = '2024-01-05'
-        self.prices = eqdata.get_price(['LUNA-USDT', 'BTC-USDT'], self.start_date, self.end_date)
+        # self.prices = eqdata.get_price(['LUNA-USDT', 'BTC-USDT'], self.start_date, self.end_date)
+        self.prices = pd.DataFrame()
         """prices[['close', 'open', 'volume']].head(3)
                                      close      open        volume
         order_book_id date                                        
