@@ -26,7 +26,6 @@ dependencies = [
 [project.optional-dependencies]
 opt = ["cvxpy"]
 
-[project.classifiers]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
